@@ -60,10 +60,15 @@ function calendarClick(event) {
     if (!el) return;
     const id = parseInt(el.id.substring(1), 10);
     const input = model.input.values;
-    const lastReadonlyDay = model.input.calendar.weeks.find(
-        x => x.fraction == model.input.values.fractionProceed
-    );
-    if (id <= lastReadonlyDay.id) return;
+    const proceed = input.fractionProceed;
+    if (proceed==0) {
+        if (id < input.dayOfWeek) return;
+    } else {
+        const lastReadonlyDay = model.input.calendar.weeks.find(
+            x => x.fraction == proceed
+        );
+        if (id <= lastReadonlyDay.id) return;
+    }
     calendarChanged(id);
 }
 
@@ -261,7 +266,7 @@ function fillCalendar(calendar) {
 }
 
 function calcCalendar(inputData) {
-    var disabledClass = "disabled";
+    var disabledClass = (inputData.fractionProceed == 0) ? "" : "disabled";
     var calendar = { weeks: [] };
     var currFraction = 1;
     var currDay = 1;
