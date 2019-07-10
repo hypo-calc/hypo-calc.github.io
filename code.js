@@ -4,6 +4,7 @@ const config = {
     formEditableValues : ["fraction", "fractionCount", "prolifiration", "alphabeta", "dayOfWeek","fractionProceed"], 
     formReadonlyValues : ["fractionProceed","offDays","treatmentDays","totalDose","EQD2","receivedDose","remainingDose"],
     weekDayNames : ["пн","вт","ср","чт","пт","сб","вс"],
+    maxFractions : 25,
     emptyDay : "0",
     offDay: "1",
     onDay: "2"
@@ -75,13 +76,19 @@ function calendarClick(event) {
 function calendarChanged(id) {
     if (!model.output.calendar) {
         model.output.calendar = JSON.parse(JSON.stringify(model.input.calendar));
+        model.output.values.fractionCount = model.input.values.fractionCount;
     }
     const cal = model.output.calendar;
     var val = cal.weeks[id];
     switch (val.type) {
-        case config.emptyDay : val.type = config.onDay; break;
-        case config.offDay   : val.type = config.onDay; break;
-        case config.onDay    : val.type = config.offDay; break;
+        case config.emptyDay: 
+        case config.offDay:
+            if (model.output.values.fractionCount == config.maxFractions) return;  
+            val.type = config.onDay; 
+            break;
+        case config.onDay: 
+            val.type = config.offDay; 
+            break;
     }
     adjustEmptyCells();
     rebuildCalendar();
