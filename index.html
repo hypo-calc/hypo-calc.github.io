@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+  <title>Hello, world!</title>
+
+  <style>
+      body {
+        background: #f0e7d5;
+      }
+
+      h1,h5 { font-weight: 300;}
+      label.col-form-label { width: 17em; }
+      label.col-form-label ~ div { width: 5em; }
+      /* .table td { text-align: center; height: 4em; }
+      .day { 
+        font-size: 0.9em;
+        float: right;
+        color: #444;
+      }
+      */
+      .day-orange { background-color: #ee975a;}
+      .day-on { background-color:#bccc76; } 
+      .day-off { background-color:#F1EDE8;} 
+
+      .calendar {
+        border: 1px solid;
+        background-color: white;
+      } 
+      .calendar div.col {
+        border: 1px solid rgba(86,61,124,.2);
+        height: 4em;
+        margin: 0;
+        padding: 0;
+        cursor: pointer;
+      }
+
+      .calendar div.col.disabled {
+        color: gray;
+        cursor: default;
+      }
+
+      
+      .calendar div.theader {
+        height: 1.7em;
+        font-size: 1em;
+        text-align: center;
+        font-variant: small-caps;
+        font-weight: 500;
+        border: 1px solid;
+        background-color: #e4dbca;
+        cursor: default;
+      } 
+
+      .cday {
+        font-size: 0.8em;
+        color: #444;
+        padding-right: 4px;
+      }
+      .mday {
+        font-size: 1.8em;
+        text-align: center;
+      }
+      .details {
+        font-size: 0.8em;
+        text-align: center;
+      }
+      #chart-content > .row > .col {
+        padding:0;
+      }
+      
+      #chart-content > .row {
+        padding: 1rem 0;
+      }
+
+      .chart-label {
+        height: 1.5rem;
+        text-align: center;
+      }
+      .chart-bar {
+        border: solid 1px;
+        background-color: #79A5F0;
+        text-align: center;
+        height: 4rem;  
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+      }
+      .chart-dose {
+        text-align: center;
+      }
+      .chart-bar.this-dose {
+        background-color: #bccc76;
+      }
+   </style>  
+</head>
+
+<body>
+  <div class="container-fluid">
+    <h1 class="text-center">Расчет гипофракционирования</h1>
+
+    <div class="container">
+      <div class="row my-4">
+        <div class="col-12 col-md-6">
+            <div class="form-group row">
+                <label class="col-form-label" for="fraction">Разовая очаговая доза <i>d</i> (РОД), Гр</label>
+                <div>
+                  <input type="number" class="form-control" id="fraction" value="2.66" placeholder="2">
+                </div>
+            </div>
+         
+          <div class="form-group row">
+              <label class="col-form-label" for="fractionCount">Кол-во рабочих дней (фракций)</label>
+              <div>
+                <input type="number" class="form-control" id="fractionCount" value="16" placeholder="16">
+              </div>
+          </div>
+          
+          <div class="form-group row">
+              <label class="col-form-label" for="prolifiration"><i>D</i> пролиферации</label>
+              <div>
+                <input type="number" class="form-control" id="prolifiration" value="0.6" placeholder="0.6">
+              </div>
+          </div>
+
+          <div class="form-group row">
+              <label class="col-form-label" for="alphabeta">Коэффициент α/β</label>
+              <div>
+                <input type="number" class="form-control" id="alphabeta" value="4" placeholder="4">
+              </div>
+          </div>
+
+          <div class="form-group row">
+            <label class="col-form-label" for="dayOfWeek">День недели начала лечения</label>
+            <div>
+              <select id="dayOfWeek" class="form-control">
+                <option value="0" selected>пн</option>
+                <option value="1">вт</option>
+                <option value="2">ср</option>
+                <option value="3">чт</option>
+                <option value="4">пт</option>
+                <!-- <option value="5">сб</option>
+                <option value="6">вс</option> -->
+              </select>
+            </div>
+          </div>          
+
+          <div class="form-group row">
+            <label class="col-form-label" for="fractionProceed">Прошло фракций</label>
+            <div>
+              <input type="number" class="form-control" id="fractionProceed" value="1" placeholder="1" min="0" max="20">
+            </div>
+        </div>
+
+        </div>
+
+        <div class="col-12 col-md-6">
+
+          <div class="form-group row">
+              <label class="col-form-label" for="treatmentDays">Кол-во дней лечения, <i>T</i></label>
+              <div>
+                <input type="number" class="form-control" id="treatmentDays" value="25" readonly>
+              </div>
+          </div>
+          <div class="form-group row">
+              <label class="col-form-label" for="offDays">Кол-во выходных</label>
+              <div>
+                <input type="number" class="form-control" id="offDays" value="25" readonly>
+              </div>
+          </div>
+          <div class="form-group row">
+              <label class="col-form-label" for="totalDose">Суммарная очаговая доза <i>D</i>, Гр</label>
+              <div>
+                <input type="number" class="form-control" id="totalDose" value="50" readonly>
+              </div>
+          </div>
+
+          <div class="form-group row">
+            <label class="col-form-label" for="EQD2">Эквивалентная доза <i>EQD<sub>2</sub></i>, Гр</label>
+            <div>
+              <input type="number" class="form-control" id="EQD2" value="50" readonly>
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label class="col-form-label" for="receivedDose">Полученная доза, Гр</label>
+            <div>
+              <input type="number" class="form-control" id="receivedDose" value="50" readonly>
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label class="col-form-label" for="remainingDose">Оставшаяся доза, Гр</label>
+            <div>
+              <input type="number" class="form-control" id="remainingDose" value="50" readonly>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <h4 class="text-center">Зависимость разовой дозы от количества оставшихся фракций</h5>
+    <div id="chart-content" class="container">
+    </div>
+    
+
+    <h4 class="text-center">Расписание лечения</h5>
+    <div class="container calendar">
+      <div id="calendar-content" class="row">
+      </div>
+    </div>
+
+  <!-- Optional JavaScript -->
+  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+  <!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script> -->
+    <script src="code.js"></script>
+</body>
+
+</html>
