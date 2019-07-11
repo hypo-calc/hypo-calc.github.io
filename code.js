@@ -70,24 +70,54 @@ function calendarClick(event) {
         );
         if (id <= lastReadonlyDay.id) return;
     }
-    calendarChanged(id);
-}
 
-function calendarChanged(id) {
     if (!model.output.calendar) {
         model.output.calendar = JSON.parse(JSON.stringify(model.input.calendar));
         model.output.values.fractionCount = model.input.values.fractionCount;
     }
+        
+    if (event.target.localName=="img") {
+        updateFractions(id);
+    } else {
+        calendarChanged(id);
+    }
+}
+
+function updateFractions(id) {
+    const weeks = model.output.calendar.weeks;
+    var val = weeks[id];
+    if (val.type != config.onDay) return;
+    const oldFraction = val.fraction;
+    var increment;
+    if (val.fractionCnt == 1) {
+       val.fractionCnt = 2;
+       increment = +1;
+    } else {
+        val.fractionCnt = 1;
+        increment = -1;
+    }
+    for(let i=id+1; i<weeks.length; i++) {
+        if (weeks[i].type != config.onDay) continue;
+        weeks[i].fraction += increment;
+    }
+    model.output.values.fractionCount += increment;
+    fillNewDose();
+    fillCalendar(model.output.calendar);
+}
+
+function calendarChanged(id) {
     const cal = model.output.calendar;
     var val = cal.weeks[id];
     switch (val.type) {
         case config.emptyDay: 
         case config.offDay:
             if (model.output.values.fractionCount == config.maxFractions) return;  
-            val.type = config.onDay; 
+            val.type = config.onDay;
+            val.fractionCnt = 1; 
             break;
         case config.onDay: 
-            val.type = config.offDay; 
+            val.type = config.offDay;
+            val.fractionCnt = 0; 
             break;
     }
     adjustEmptyCells();
@@ -129,12 +159,12 @@ function rebuildCalendar() {
         switch (val.type) {
             case config.onDay:
                 val.fraction = currFraction++;
+                if (val.fractionCnt==2) currFraction++;
             case config.offDay:
                 val.day = currDay++;
                 break;
             case config.emptyDay: break;
         }
-    
     }
     model.output.values.fractionCount = currFraction-1;
     model.output.values.treatmentDays = currDay-1;
@@ -237,13 +267,13 @@ function fillCalendar(calendar) {
                               .map(x => `<div class="col theader">${x}</div>`)
                               .join("");
 
-    const getCalendarCellOn = (id, frac, dose, tday, cl) => 
+    const getCalendarCellOn = (id, frac, dose, tday, cl, img) => 
     `<div id="c${id}" class="col d-flex flex-row day-on ${cl}">
         <div class="flex-grow-1 flex-column">
            <div class="flex-grow-1 mday">${frac}</div>
            <div class="details">${dose} Гр</div>
         </div>
-        <div class="cday">${tday}</div>
+        <div class="cday d-flex flex-column justify-content-between"><div>${tday}</div><img src="images/${img}.svg"> </div>
     </div>`;                          
     
     const getCalendarCellOff = (id, tday, cl) => 
@@ -254,10 +284,14 @@ function fillCalendar(calendar) {
 
     const getCalendarCellEmpty = (id) => `<div id="c${id}" class="col"></div>`;
 
+    const getFraction = (cell) => (cell.fractionCnt==1)
+           ? cell.fraction
+           : `${cell.fraction}/${cell.fraction+1}`;
+
     function getCell(x, idx) {
         var line = (idx % 7 == 0) ? crlf : "";
         switch (x.type) {
-          case config.onDay : return line + getCalendarCellOn(x.id, x.fraction, x.dose, x.day, x.class); 
+          case config.onDay : return line + getCalendarCellOn(x.id, getFraction(x), x.dose, x.day, x.class, x.fractionCnt==1?"plus":"minus"); 
           case config.offDay: return line + getCalendarCellOff(x.id, x.day, x.class);
           default: return line + getCalendarCellEmpty(x.id);
         }
@@ -294,6 +328,7 @@ function calcCalendar(inputData) {
                 id: idCounter++,
                 type: config.onDay,
                 fraction: currFraction++,
+                fractionCnt: 1,
                 day: currDay++,
                 dose: inputData.fraction,
                 class: disabledClass 

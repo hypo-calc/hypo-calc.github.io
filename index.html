@@ -64,6 +64,19 @@
         font-size: 0.8em;
         color: #444;
         padding-right: 4px;
+        width: 1.2rem;
+      }
+      .cday > div {
+        text-align: right;
+      } 
+      .cday > img {
+        width: 1rem;
+        height: 1rem;
+        margin-bottom: 4px;
+        display: none;
+      }
+      #calendar-content > div:hover > .cday > img {
+        display: block;
       }
       .mday {
         font-size: 1.8em;
@@ -214,7 +227,8 @@
     <div id="chart-content" class="container">
     </div>
 
-    <h4 class="text-center">Расписание лечения</h5>
+    <h4 class="text-center">Расписание лечения</h4>
+
     <div class="container calendar">
       <div id="calendar-content" class="row">
       </div>
