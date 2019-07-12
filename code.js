@@ -1,16 +1,5 @@
 "use strict";
 
-const config = {
-    formEditableValues : ["fraction", "fractionCount", "prolifiration", "alphabeta", "dayOfWeek","fractionProceed"], 
-    formReadonlyValues : ["fractionProceed","offDays","treatmentDays","totalDose","EQD2","receivedDose","remainingDose"],
-    weekDayNames : ["пн","вт","ср","чт","пт","сб","вс"],
-    maxFractions : 25,
-    maxFractionsPerDay: 3,
-    emptyDay : "0",
-    offDay: "1",
-    onDay: "2"
-}
-
 var model = {
     input : { values : {}, calendar: null },
     output: { values : {}, calendar: null }
@@ -363,5 +352,10 @@ function calcCalendar(inputData) {
     return calendar;
 }
 
+
 attachFormEvents();
 inputDataChanged();
+
+// document.getElementById("test-button").addEventListener("click", 
+//    ()=> modalUtils.selectRepairFactor(3,38,console.log)
+// );
