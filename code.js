@@ -5,6 +5,7 @@ const config = {
     formReadonlyValues : ["fractionProceed","offDays","treatmentDays","totalDose","EQD2","receivedDose","remainingDose"],
     weekDayNames : ["пн","вт","ср","чт","пт","сб","вс"],
     maxFractions : 25,
+    maxFractionsPerDay: 3,
     emptyDay : "0",
     offDay: "1",
     onDay: "2"
@@ -77,25 +78,18 @@ function calendarClick(event) {
     }
         
     if (event.target.localName=="img") {
-        updateFractions(id);
+        const increment = event.target.getAttribute("data") == "plus" ? +1: -1;
+        updateFractions(id, increment);
     } else {
         calendarChanged(id);
     }
 }
 
-function updateFractions(id) {
+function updateFractions(id, increment) {
     const weeks = model.output.calendar.weeks;
     var val = weeks[id];
     if (val.type != config.onDay) return;
-    const oldFraction = val.fraction;
-    var increment;
-    if (val.fractionCnt == 1) {
-       val.fractionCnt = 2;
-       increment = +1;
-    } else {
-        val.fractionCnt = 1;
-        increment = -1;
-    }
+    val.fractionCnt += increment;
     for(let i=id+1; i<weeks.length; i++) {
         if (weeks[i].type != config.onDay) continue;
         weeks[i].fraction += increment;
@@ -267,13 +261,18 @@ function fillCalendar(calendar) {
                               .map(x => `<div class="col theader">${x}</div>`)
                               .join("");
 
-    const getCalendarCellOn = (id, frac, dose, tday, cl, img) => 
+    const getPlusMinusIcon = (img) => `<img src="images/${img}.svg" data="${img}">`;
+        
+    const getCalendarCellOn = (id, frac, dose, tday, cl, imgs) => 
     `<div id="c${id}" class="col d-flex flex-row day-on ${cl}">
         <div class="flex-grow-1 flex-column">
            <div class="flex-grow-1 mday">${frac}</div>
            <div class="details">${dose} Гр</div>
         </div>
-        <div class="cday d-flex flex-column justify-content-between"><div>${tday}</div><img src="images/${img}.svg"> </div>
+        <div class="cday d-flex flex-column justify-content-between">
+           <div>${tday}</div>
+           ${imgs.map(getPlusMinusIcon).join("")} 
+        </div>
     </div>`;                          
     
     const getCalendarCellOff = (id, tday, cl) => 
@@ -284,14 +283,21 @@ function fillCalendar(calendar) {
 
     const getCalendarCellEmpty = (id) => `<div id="c${id}" class="col"></div>`;
 
-    const getFraction = (cell) => (cell.fractionCnt==1)
-           ? cell.fraction
-           : `${cell.fraction}/${cell.fraction+1}`;
+    const getFraction = (cell) => 
+           Array.from({length:cell.fractionCnt}, (x,ind) => `${cell.fraction+ind}`)
+                .join("/");
+
+    const generateIconsList = (fractionCount) => {
+        var result = [];
+        if (fractionCount > 1) result.push("minus");
+        if (fractionCount < config.maxFractionsPerDay) result.push("plus");
+        return result;
+    }
 
     function getCell(x, idx) {
         var line = (idx % 7 == 0) ? crlf : "";
         switch (x.type) {
-          case config.onDay : return line + getCalendarCellOn(x.id, getFraction(x), x.dose, x.day, x.class, x.fractionCnt==1?"plus":"minus"); 
+          case config.onDay : return line + getCalendarCellOn(x.id, getFraction(x), x.dose, x.day, x.class, generateIconsList(x.fractionCnt)); 
           case config.offDay: return line + getCalendarCellOff(x.id, x.day, x.class);
           default: return line + getCalendarCellEmpty(x.id);
         }
