@@ -65,10 +65,13 @@ function calendarClick(event) {
         model.output.calendar = JSON.parse(JSON.stringify(model.input.calendar));
         model.output.values.fractionCount = model.input.values.fractionCount;
     }
-        
+
+    var data = event.target.getAttribute("data");
     if (event.target.localName=="img") {
-        const increment = event.target.getAttribute("data") == "plus" ? +1: -1;
+        const increment = (data == "plus") ? +1: -1;
         updateFractions(id, increment);
+    } else if ((event.target.localName=="div") && (data)) {
+        updateRepairFactor(id);
     } else {
         calendarChanged(id);
     }
@@ -79,6 +82,14 @@ function updateFractions(id, increment) {
     var val = weeks[id];
     if (val.type != config.onDay) return;
     val.fractionCnt += increment;
+    if (val.fractionCnt>1) {
+        let rft = getRepairFactors(val.fractionCnt);
+        val.repairFactorId = rft.defaultValue;
+        val.Hm = getRepairFactor(val.fractionCnt, val.repairFactorId);
+    } else {
+        val.repairFactorId = null;
+        val.Hm = null;
+    }
     for(let i=id+1; i<weeks.length; i++) {
         if (weeks[i].type != config.onDay) continue;
         weeks[i].fraction += increment;
@@ -86,6 +97,19 @@ function updateFractions(id, increment) {
     model.output.values.fractionCount += increment;
     fillNewDose();
     fillCalendar(model.output.calendar);
+}
+
+function updateRepairFactor(id) {
+    const weeks = model.output.calendar.weeks;
+    var val = weeks[id];
+    if (val.type != config.onDay) return;
+
+    const callback = (x) => {
+        val.repairFactorId = x;
+        val.Hm = getRepairFactor(val.fractionCnt, val.repairFactorId);
+        fillCalendar(model.output.calendar);
+    };
+    modalUtils.selectRepairFactor(val.fractionCnt, val.repairFactorId, callback);         
 }
 
 function calendarChanged(id) {
@@ -141,8 +165,8 @@ function rebuildCalendar() {
         let val = weeks[i];
         switch (val.type) {
             case config.onDay:
-                val.fraction = currFraction++;
-                if (val.fractionCnt==2) currFraction++;
+                val.fraction = currFraction;
+                currFraction += val.fractionCnt;
             case config.offDay:
                 val.day = currDay++;
                 break;
@@ -151,6 +175,20 @@ function rebuildCalendar() {
     }
     model.output.values.fractionCount = currFraction-1;
     model.output.values.treatmentDays = currDay-1;
+}
+
+function getRepairFactors(m) { 
+    return (m==2) 
+        ? config.repairFactorsTable2 
+        : config.repairFactorsTable3;
+}
+
+function getRepairFactor(m, id) {
+    var table = getRepairFactors(m).table;
+    var len = table[0].length;
+    var y = id % len;
+    var x = (id - y) / len + 1;
+    return table[x][y+1]; 
 }
 
 function getEquivalentQuantityDose(fractionCount, fraction, alphabeta) {
@@ -252,11 +290,11 @@ function fillCalendar(calendar) {
 
     const getPlusMinusIcon = (img) => `<img src="images/${img}.svg" data="${img}">`;
         
-    const getCalendarCellOn = (id, frac, dose, tday, cl, imgs) => 
+    const getCalendarCellOn = (id, frac, dose, tday, cl, imgs, Hm) => 
     `<div id="c${id}" class="col d-flex flex-row day-on ${cl}">
         <div class="flex-grow-1 flex-column">
            <div class="flex-grow-1 mday">${frac}</div>
-           <div class="details">${dose} Гр</div>
+           <div class="details">${dose}&nbsp;Gy  ${Hm}</div>
         </div>
         <div class="cday d-flex flex-column justify-content-between">
            <div>${tday}</div>
@@ -283,10 +321,19 @@ function fillCalendar(calendar) {
         return result;
     }
 
+    const getHm = (x) => {
+        if (x.fractionCnt <= 1) return "";
+        return `<div class="Hm" data="${x.Hm}"><i>H<sub>m</sub></i>=${x.Hm.toFixed(4)}</div>`;
+    }
+
     function getCell(x, idx) {
         var line = (idx % 7 == 0) ? crlf : "";
         switch (x.type) {
-          case config.onDay : return line + getCalendarCellOn(x.id, getFraction(x), x.dose, x.day, x.class, generateIconsList(x.fractionCnt)); 
+          case config.onDay : return line + getCalendarCellOn(
+              x.id, getFraction(x), x.dose, x.day, 
+              x.class+((x.fractionCnt>1)?" multi":""), 
+              generateIconsList(x.fractionCnt),
+              getHm(x)); 
           case config.offDay: return line + getCalendarCellOff(x.id, x.day, x.class);
           default: return line + getCalendarCellEmpty(x.id);
         }
