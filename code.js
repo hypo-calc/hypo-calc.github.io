@@ -95,8 +95,7 @@ function updateFractions(id, increment) {
         weeks[i].fraction += increment;
     }
     model.output.values.fractionCount += increment;
-    fillNewDose();
-    fillCalendar(model.output.calendar);
+    calcAndFillCalendar(model.output.calendar);
 }
 
 function updateRepairFactor(id) {
@@ -107,7 +106,7 @@ function updateRepairFactor(id) {
     const callback = (x) => {
         val.repairFactorId = x;
         val.Hm = getRepairFactor(val.fractionCnt, val.repairFactorId);
-        fillCalendar(model.output.calendar);
+        calcAndFillCalendar(model.output.calendar);
     };
     modalUtils.selectRepairFactor(val.fractionCnt, val.repairFactorId, callback);         
 }
@@ -129,6 +128,10 @@ function calendarChanged(id) {
     }
     adjustEmptyCells();
     rebuildCalendar();
+    calcAndFillCalendar(cal);
+}
+
+function calcAndFillCalendar(cal) {
     Object.assign(
         model.output.values, 
         calcNewDose(model.output.values.fractionCount)
@@ -223,6 +226,17 @@ function calcNewDose(newFractionCount) {
     };
 }
 
+function calcMultiPerDayDose(fraction, fractionCnt, Hm) {
+    const input = model.input.values;
+    const EQD2 = getEquivalentQuantityDose(fractionCnt, fraction, input.alphabeta);
+    const dose = solveQuadraticEquation(
+        1+Hm,
+        input.alphabeta,
+        -EQD2*(2+input.alphabeta) / fractionCnt
+    );
+    return (Math.round(dose*100)/100).toFixed(2);
+}
+
 function solveQuadraticEquation(a,b,c) {
     const discr = Math.sqrt(b*b - 4*a*c);
     const x1 = (-b + discr) / (2*a);
@@ -273,7 +287,11 @@ function fillNewDose() {
     var dose = input.fraction;
     for(let i=0; i<weeks.length; i++) {
         if (weeks[i].type == config.onDay) {
-            weeks[i].dose = dose;
+            if (weeks[i].fractionCnt==1) {
+                weeks[i].dose = dose;
+            } else {
+                weeks[i].dose = calcMultiPerDayDose(dose, weeks[i].fractionCnt, weeks[i].Hm);
+            }
         }
         if (weeks[i].fraction == input.fractionProceed) {
             dose = Math.round(output.fraction*100)/100;
@@ -402,7 +420,3 @@ function calcCalendar(inputData) {
 
 attachFormEvents();
 inputDataChanged();
-
-// document.getElementById("test-button").addEventListener("click", 
-//    ()=> modalUtils.selectRepairFactor(3,38,console.log)
-// );
