@@ -212,13 +212,13 @@ function calcNewDose(newFractionCount) {
         -EQD2T*(2+input.alphabeta)/input.totalDose
     );
     const receivedDose = input.receivedDose;
-    const remainingDose = getEquivalentQuantityDose(newFractionCount-input.fractionProceed, input.fraction, input.alphabeta);
+    const remainingDose = input.remainingDose;
     const doseDiff = EQD2T - EQD2;
-    const totalDose = EQD2 - receivedDose - doseDiff;
+    //const totalDose = EQD2 - receivedDose - doseDiff;
     const fraction = solveQuadraticEquation(
         1, 
         input.alphabeta,
-        -totalDose*(2+input.alphabeta)/(newFractionCount-input.fractionProceed)
+        -remainingDose*(2+input.alphabeta)/(newFractionCount-input.fractionProceed)
     );
     return { 
         EQD2, EQD2new, deltaT, EQD2T, doseLostPercent, doseError, 
