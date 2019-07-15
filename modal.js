@@ -22,8 +22,12 @@ const modalUtils = (function() {
    <tbody>${skipFirst(t).map(rowCell).join("")}<tbody>
 </table>
 <div>
-   <i>Note: </i>Shaded cells: The approximation of complete overnight repair is less precise here and this affects the precision of biological dose estimates.<br/>
-   <i>Source: </i><a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.462.2846&rep=rep1&type=pdf" target="blank">Basic Clinical Radiobiology, Michael C. Joiner, ‎Albert J. van der Kogel - 2018, Table 9.2</a>
+  <table class="note">
+    <tbody>
+      <tr><td><i>Note: </i><td>Shaded cells: The approximation of complete overnight repair is less precise here and this affects the precision of biological dose estimates.
+      <tr><td><i>Source:</i><td>Basic Clinical Radiobiology, Michael C. Joiner, ‎Albert J. van der Kogel - 2018, p.107, Table 9.4
+    </tbody>
+  </table>  
  </div>`;
     }
 

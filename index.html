@@ -141,7 +141,29 @@
       .repair-factors th.fcol {
         max-width: 6rem;
       }
+
+      td.subhead {
+        font-weight: 500;
+      }
+      td.subline {
+        padding-left: 2em;
+      }
+
+      table.note td {
+        font-size: 0.8em;
+        vertical-align: top;
+      }
+
+      .link {
+        cursor: pointer;
+        color: blue;
+        margin-left: 1em; 
+      }
+      .link:hover {
+        text-decoration: underline;
+      }
    </style>  
+
 </head>
 
 <body>
@@ -173,7 +195,7 @@
           </div>
 
           <div class="form-group row">
-              <label class="col-form-label" for="alphabeta">Коэффициент α/β</label>
+              <label class="col-form-label" for="alphabeta">Коэффициент α/β <span class="link" data-toggle="modal" data-target="#fract-sensitivity">( Details )</span></label>
               <div>
                 <input type="number" class="form-control" id="alphabeta" value="4" placeholder="4">
               </div>
@@ -264,7 +286,93 @@
 
     <div id="modal-placeholder"></div>
 
+    <div id="fract-sensitivity" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-xl" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Fractionation sensitivity of human normal tissues and tumours</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>    
+            <div class="modal-body">
+      <table class="table table-bordered table-hover table-sm fract-sensitivity">
+          <thead>
+            <tr>
+              <th>Tissue/organ<th>Endpoint<th><i>α/β</i> (Gy)<th>95% CL (Gy)<th>Source
+            </tr>             
+          </thead>
+          <tbody>
+            <tr><td colspan="5" class="subhead">Early reactions
 
+            <tr><td rowspan="4">Skin       <td>Erythema        <td>8.8  <td>[6.9; 11.6]<td>Turesson and Thames (1989)
+            <tr>               <td>Erythema        <td>12.3 <td>[1.8; 22.8] <td>Bentzen <i>et al.</i> (1988)
+            <tr>               <td>Dry desquamation<td>~8    <td>N/A       <td>Chogule and Supe (1993)
+            <tr>               <td>Desquamation    <td>11.2 <td>[8.5; 17.6] <td>Turesson and Thames (1989)
+            <tr><td rowspan="3">Oral mucosa<td>Mucositis       <td>9.3  <td>[5.8; 17.9]<td>Denham <i>et al.</i> (1995)
+            <tr>               <td>Mucositis       <td>15   <td>[-15; 45]<td>Rezvani <i>et al.</i> (1991)
+            <tr>               <td>Mucositis       <td>8    <td>N/A       <td>Chogule and Supe (1993)
+            <tr><td colspan="5" class="subhead">Late reactions
+            <tr><td rowspan="4">Skin/vasculature <td>Telangiectasia<td>2.8<td>[1.7; 3.8]<td>Turesson and Thames (1989)
+            <tr>                     <td>Telangiectasia<td>2.6<td>[2.2; 3.3]<td>Bentzen <i>et al.</i> (1990)
+            <tr>                     <td>Telangiectasia<td>2.8<td>[-0.1; 8.1]<td>Bentzen and Overgaard (1991)
+            <tr>                     <td>Telangiectasia<td>3.8<td>[1.8; 5.7]<td>Haviland <i>et al.</i> (2013)
+            <tr><td>Subcutis         <td>Fibrosis      <td>1.7<td>[0.6; 2.6]<td>Bentzen and Overgaard (1991)
+            <tr><td rowspan="3">Breast<td>Cosmetic change in appearance<td>3.5<td>[0.7; 6.4]<td>Haviland <i>et al.</i> (2013)
+            <tr>                     <td>Induration (fibrosis)<td>4.0<td>[2.3; 5.6]<td>Haviland <i>et al.</i> (2013)
+            <tr>                     <td>Breast oedema<td>4.7<td>[2.4; 7.0]<td>Haviland <i>et al.</i> (2013)
+            <tr><td>Muscle/vasculature/cartilage<td>Impaired shoulder movement<td>3.5<td>[0.7; 6.2]<td>Bentzen <i>et al.</i> (1989)
+            <tr><td rowspan="3">Nerve<td>Brachial plexopathy<td>&lt;3.5<sup>a</sup><td>N/A<td>Olsen <i>et al.</i> (1990)
+            <tr>         <td>Brachial plexopathy<td>~2<td>N/A<td>Powell <i>et al.</i> (1990)
+            <tr>         <td>Optic neuropathy<td>1.6<td>[-7; 10]<td>Jiang <i>et al.</i> (1994)
+            <tr><td>Spinal cord<td>Myelopathy<td>&lt;3.3<td>N/A<td>Dische <i>et al.</i> (1981)
+            <tr><td>Eye<td>Corneal injury<td>2.9<td>[-4; 10]<td>Jiang <i>et al.</i> (1994)
+            <tr><td>Bowel<td>Stricture/perforation<td>3.9<td>[2.5; 5.3]<td>Deore <i>et al.</i> (1993)
+            <tr><td>Bowel<td>Various late effects<td>4.3<td>[2.2; 9.6]<td>Dische <i>et al.</i> (1999)
+            <tr><td rowspan="2">Lung<td>Pneumonitis<td>4.0<td>[2.2; 5.8]<td>Bentzen <i>et al.</i> (2000)
+            <tr>        <td>Lung fibrosis (radiological)<td>3.1<td>[-0.2; 8.5]<td>Dubray <i>et al.</i> (1995)
+            <tr><td rowspan="2">Head and neck<td>Various late effects<td>3.5<td>[1.1; 5.9]<td>Rezvani <i>et al.</i> (1991)
+            <tr><td>Various late effects<td>4.0<td>[3.3; 5.0]<td> Stuschke and Thames (1999)
+            <tr><td>Supraglottic larynx<td>Various late effects<td>3.8<td>[0.8; 14]<td>Maciejewski <i>et al.</i> (1986)
+            <tr><td>Oral cavity+oropharynx<td>Various late effects<td>0.8<td>[-0.6; 2.5]<td>Maciejewski <i>et al.</i> (1990)
+            <tr><td colspan="5" class="subhead">Tumours
+            <tr><td>Head and neck<td><td><td><td>
+            <tr><td class="subline">Various<td><td>10.5<td>[6.5; 29]<td>Stuschke and Thames (1999)
+            <tr><td class="subline">Larynx<td><td>14.5<sup>a</sup><td>[4.9; 24]<td>Rezvani <i>et al.</i> (1993)
+            <tr><td class="subline">Vocal cord<td><td>~13<td>‘wide’<td>Robertson <i>et al.</i> (1993)
+            <tr><td class="subline">Buccal mucosa<td><td>6.6<td>[2.9; ∞]<td>Maciejewski <i>et al.</i> (1989)
+            <tr><td class="subline">Tonsil<td><td>7.2<td>[3.6; ∞]<td>Maciejewski <i>et al.</i> (1989)
+            <tr><td class="subline">Nasopharynx<td><td>16<td>[-11; 43]<td>Lee <i>et al.</i> (1995)
+            <tr><td>Lung (NSCLC, early)<td><td>8.2<td>[7.0; 9.4]<td>Stuschke and Pöttgen (2010)
+            <tr><td>Skin<td><td>8.5<sup>a</sup><td>[4.5; 11.3]<td>Trott <i>et al.</i> (1984)
+            <tr><td>Prostate<sup>b</sup><td><td>2.7<td>[1.6; 3.8]<td>Vogelius and Bentzen (2018)
+            <tr><td>Breast<td><td>3.5<td>[1.2; 5.7]<td>Haviland <i>et al.</i> (2013)
+            <tr><td>Oesophagus<td><td>4.9<td>[1.5; 17]<td>Geh <i>et al.</i> (2006)
+            <tr><td>Melanoma<td><td>0.6<td>[-1.1; 2.5]<td>Bentzen <i>et al.</i> (1989)
+            <tr><td>Liposarcoma<td><td>0.4<td>[-1.4; 5.4]<td>Thames and Suit (1986)
+        </tbody>   
+       </table>
+       <div>
+         <table class="note">
+           <tbody>
+              <tr><td><i>Source:</i><td>Basic Clinical Radiobiology, Michael C. Joiner, ‎Albert J. van der Kogel - 2018, p.114, Table 10.1</a><br/>
+              <tr><td><i>Note: </i><td>Reference details are available from Soren Benzen.
+           </tbody>
+         </table>
+          <table class="note">
+              <tbody>
+                 <tr><td><sup>a</sup><td>Re-analysis of original published data
+                 <tr><td><sup>b</sup><td>Meta-analysis of randomized controlled trials of external beam therapy, more estimates are available from comparision of outcome after brachytherapy vs external beam therapy. This analisys includes an adjustment for overall treatment time.
+              </tbody>
+            </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+    </div>
+  </div>
+</div>
+</div>
 
   <!-- Optional JavaScript -->
   <!-- jQuery first, then Popper.js, then Bootstrap JS -->
