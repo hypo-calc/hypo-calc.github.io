@@ -203,17 +203,17 @@ function calcNewDose(newFractionCount) {
     const output = model.output.values;
     const EQD2 = getEquivalentQuantityDose(input.fractionCount, input.fraction, input.alphabeta);
     const EQD2new = getEquivalentQuantityDose(newFractionCount, input.fraction, input.alphabeta);
-    const deltaT = input.fractionCount - newFractionCount;
-    const EQD2T = EQD2new - deltaT * input.prolifiration;
-    const doseLostPercent = 100*(1-EQD2T/EQD2);
-    const doseError = 1 - solveQuadraticEquation(
-        input.fraction, 
-        input.alphabeta,
-        -EQD2T*(2+input.alphabeta)/input.totalDose
-    );
-    const receivedDose = input.receivedDose;
+    //const deltaT = input.fractionCount - newFractionCount;
+    //const EQD2T = EQD2new - deltaT * input.prolifiration;
+    //const doseLostPercent = 100*(1-EQD2T/EQD2);
+    // const doseError = 1 - solveQuadraticEquation(
+    //     input.fraction, 
+    //     input.alphabeta,
+    //     -EQD2T*(2+input.alphabeta)/input.totalDose
+    // );
+    //const receivedDose = input.receivedDose;
     const remainingDose = input.remainingDose;
-    const doseDiff = EQD2T - EQD2;
+    //const doseDiff = EQD2T - EQD2;
     //const totalDose = EQD2 - receivedDose - doseDiff;
     const fraction = solveQuadraticEquation(
         1, 
@@ -221,8 +221,8 @@ function calcNewDose(newFractionCount) {
         -remainingDose*(2+input.alphabeta)/(newFractionCount-input.fractionProceed)
     );
     return { 
-        EQD2, EQD2new, deltaT, EQD2T, doseLostPercent, doseError, 
-        receivedDose, remainingDose, doseDiff, totalDose, fraction
+        EQD2, EQD2new, /*deltaT, EQD2T, doseLostPercent, doseError, 
+        receivedDose, remainingDose, doseDiff,*/ totalDose, fraction
     };
 }
 
