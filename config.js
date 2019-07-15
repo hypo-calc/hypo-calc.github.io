@@ -9,6 +9,9 @@ const config = {
     emptyDay : "0",
     offDay: "1",
     onDay: "2",
+    defaultMultifractionPeriod: [null, null, 6, 3],
+    
+    // TODO : remove this
     repairFactorsTable2: {
         table: [
             [          3,     4,     5,     6,     8,    10],
