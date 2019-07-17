@@ -33,7 +33,9 @@ const modalUtils = (function() {
 //     }
 
     function getDeltaTime(m, deltaT, fraction) {
-        const deltas = [0.5, 0.75, 1.0, 1.25, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 7, 8];
+        const deltas = [0.5, 0.75, 1.0, 1.25, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 7, 8, 9, 10, 11, 12]
+                      .filter(x=>x*m<=24);
+
         const data = deltas.map(x => ({ t: x, dose: calcMultiPerDayDose(fraction, m, x) }));
         const rowCell = (x) => `<tr class="${x.t==deltaT?'selected':'null'}" data="${x.t}"><td>${x.t.toFixed(2)}<td>${x.dose}</tr>`;
         return `
