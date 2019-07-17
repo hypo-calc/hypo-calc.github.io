@@ -10,7 +10,7 @@ function getInputData() {
     config.formEditableValues.forEach(
         x => data[x] = parseFloat(document.getElementById(x).value, 10)
     );
-
+    data.useProlif = document.getElementById("useProlif").checked;
     // validate fractionProceed
     if (data.fractionProceed < 0) data.fractionProceed = 0;
     if (data.fractionProceed >= data.fractionCount) data.fractionProceed = data.fractionCount-1;
@@ -44,6 +44,27 @@ function attachFormEvents() {
     );
     var content = document.getElementById("calendar-content");
     content.addEventListener("click", calendarClick, false);
+    var addWeek = document.getElementById("add-week");
+    addWeek.addEventListener("click", addWeekClick, false);
+}
+
+function addWeekClick(event) {
+    const fillCalendarWithEmptyWeek = (c) => {
+        let idCounter = c.length;
+        for(let i=1; i<=7; i++) c.push({  
+            id: idCounter++, 
+            type : config.emptyDay,
+            class: "" 
+        });
+    }
+
+    let cal = model.input.calendar;
+    fillCalendarWithEmptyWeek(cal.weeks);
+    if (model.output.calendar) {
+        cal = model.output.calendar;
+        fillCalendarWithEmptyWeek(cal.weeks);
+    }
+    fillCalendar(cal);
 }
 
 function calendarClick(event) {
@@ -221,10 +242,10 @@ function calcNewDose(newFractionCount) {
     // );
     //const receivedDose = input.receivedDose;
 
-    const remainingDose = input.remainingDose;
+    let remainingDose = input.remainingDose;
     if (input.useProlif) {
         const deltaT = (output.treatmentDays || input.treatmentDays) - input.treatmentDays;
-        remainingDose -= deltaT * input.prolif;
+        remainingDose += deltaT * input.prolif;
     }
 
     const fraction = solveQuadraticEquation(
