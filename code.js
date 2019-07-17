@@ -85,6 +85,9 @@ function calendarClick(event) {
     if (!model.output.calendar) {
         model.output.calendar = JSON.parse(JSON.stringify(model.input.calendar));
         model.output.values.fractionCount = model.input.values.fractionCount;
+        ["fractionCount", "dayOfWeek", "fractionProceed"].forEach(
+            x => document.getElementById(x).disabled = true
+        );
     }
 
     var data = event.target.getAttribute("data");
@@ -203,20 +206,6 @@ function rebuildCalendar() {
     model.output.values.treatmentDays = currDay-1;
 }
 
-// function getRepairFactors(m) { 
-//     return (m==2) 
-//         ? config.repairFactorsTable2 
-//         : config.repairFactorsTable3;
-// }
-
-// function getRepairFactor(m, id) {
-//     var table = getRepairFactors(m).table;
-//     var len = table[0].length;
-//     var y = id % len;
-//     var x = (id - y) / len + 1;
-//     return table[x][y+1]; 
-// }
-
 function getRepairFactor(m, ht, Δt) {
     const μ = Math.log(2) / ht;
     const φ = Math.exp(-μ * Δt);
@@ -282,12 +271,20 @@ function inputDataChanged(event) {
     var inputValues = getInputData();
     calcFormValues(inputValues);
     fillReadonlyFormData(inputValues);
+    if (event && event.target.id=="useProlif") {
+       document.getElementById("prolif").disabled = !inputValues.useProlif; 
+    }
+
     model.input.values = inputValues;
-    model.input.calendar = calcCalendar(model.input.values);
-    model.output.calendar = null;
-    console.log(model);
     fillDoseChart();
-    fillCalendar(model.input.calendar);
+    if (model.output.calendar) {
+        rebuildCalendar();
+        calcAndFillCalendar(model.output.calendar);
+    } else {
+        model.input.calendar = calcCalendar(model.input.values);
+        model.output.calendar = null;
+        fillCalendar(model.input.calendar);
+    }
 }
 
 function fillDoseChart() {
