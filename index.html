@@ -165,6 +165,18 @@
       tr.selected {
         font-weight: 700;
       }
+
+      #useProlif {
+        margin-top: 0.8em;
+        margin-left: 0;
+      }
+      #useProlif + label {
+        padding-left: 1.2em;
+        color: #6c757d;
+      }
+      #useProlif:checked + label {
+        color: black;
+      }
    </style>  
 
 </head>
@@ -223,6 +235,16 @@
             <label class="col-form-label" for="fractionProceed">Прошло фракций</label>
             <div>
               <input type="number" class="form-control" id="fractionProceed" value="1" placeholder="1" min="0" max="25">
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <input type="checkbox" class="form-check-input" id="useProlif">
+            <label class="col-form-label" for="prolif">
+              Use <i>D<sub>prolif</sub></i> <span class="link" data-toggle="modal" data-target="#d-prolif">(info)</span>
+            </label>
+            <div>
+              <input type="number" class="form-control" id="prolif" value="0.8" placeholder="0.8" min="0" max="5">
             </div>
         </div>
 
@@ -423,6 +445,64 @@
 </div>
 <div class="modal-footer">
   <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+</div>
+</div>
+</div>
+</div>
+
+<div id="d-prolif" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Values for the dose recovered per day owing to proliferation (<i>D<sub>prolif</sub></i>) from clinical studies</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>    
+        <div class="modal-body">
+
+  <table class="table table-bordered table-hover table-sm fract-sensitivity">
+      <thead>
+        <tr>
+          <th>Tissue<th>Endpoint<th><i>D<sub>prolif</sub></i> (Gy/day)<th>95% CL (Gy/day)<th>T<sub>k</sub><sup>b</sup>(days)<th>Source
+        </tr>             
+      </thead>
+      <tbody>
+          <tr><td colspan="6" class="subhead">Early reactions
+          <tr><td>Skin<td>Erythema<td>0.12<td>[-0.12; 0.22]<td>&lt;12<td>Bentzen <i>et al.</i> (2001)
+          <tr><td>Mucosa<td>Mucositis<td>0.8<td>[0.7; 1.1]<td>&lt;12<td>Bentzen <i>et al.</i> (2001)
+          <tr><td>Lung<td>Pneumonitis<td>0.54<td>[0.13; 0.95]<td><td>Bentzen <i>et al.</i> (2000)<sup>a</sup>
+          <tr><td colspan="6" class="subhead">Tumours
+          <tr><td>Head and neck<td><td><td><td><td>
+          <tr><td class="subline">Larynx<td><td>0.74<td>[0.30; 1.2]<td><td>Robertson <i>et al.</i> (1998)
+          <tr><td class="subline">Tonsils<td><td>0.73<td><td>30<td>Withers <i>et al.</i> (1995)
+          <tr><td class="subline">Various<td><td>0.8<td>[0.5; 1.1]<td>21<td>Robers <i>et al.</i> (1994)
+          <tr><td class="subline">Various<td><td>0.64<td>[0.42; 0.86]<td><td>Hendry <i>et al.</i> (1996)<sup>a</sup> 
+          <tr><td>Breast<td><td>0.60<td>[0.10; 1.18]<td><td>Haviland <i>at al.</i> (2016)
+          <tr><td>Oesophagus<td><td>0.59<td>[0.18; 0.99]<td><td>Geh <i>et al.</i> (2005)
+          <tr><td>Non-small cell lung cancer<td><td>0.45<td>N/A<td><td>Koukourakis <i>et al.</i> (1996)
+          <tr><td>Medulloblastoma<td><td>0.52<td>[0.29; 0.75]<td>0 or 21<td>Hinata <i>et al.</i> (2001)
+          <tr><td>Prostate<td><td>0.24<td>[0.03; 0.44]<td>52<td>Thames <i>at al.</i> (2010)
+    </tbody>   
+   </table>
+   <div>
+     <table class="note">
+       <tbody>
+          <tr><td><i>Source:</i><td>Basic Clinical Radiobiology, Michael C. Joiner, ‎Albert J. van der Kogel - 2018, p.117, Table 10.3</a><br/>
+          <tr><td><i>Note: </i><td>Reference details are available from Soren Benzen.
+       </tbody>
+     </table>
+      <table class="note">
+          <tbody>
+             <tr><td><sup>a</sup><td>Pooled estimate from a review of studies in the literature.
+             <tr><td><sup>b</sup><td><i>T<sub>k</sub></i> is the assumed time for the onset of accelerated proliferation.
+          </tbody>
+        </table>
+  </div>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+</div>
 </div>
 </div>
 </div>
