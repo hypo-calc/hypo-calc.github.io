@@ -10,15 +10,24 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
     integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <link rel="icon" href="favicon.ico" type="image/jpg"/>
-  <title>Расчет гипофракционирования</title>
+  <title>Калькулятор доз</title>
 
   <style>
       body {
         background: #f0e7d5;
       }
 
-      h1,h5 { font-weight: 300;}
-      label.col-form-label { width: 17em; }
+      /* Chrome, Safari, Edge, Opera */
+      input::-webkit-outer-spin-button,
+      input::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+      }
+      /* Firefox */
+      input[type=number] { -moz-appearance: textfield;   }
+
+      h1,h5 { font-weight: 300; font-size: 1.5rem; }
+      label.col-form-label { width: 22em; }
       label.col-form-label ~ div { width: 5em; }
       /* .table td { text-align: center; height: 4em; }
       .day { 
@@ -30,6 +39,9 @@
       .day-orange { background-color: #ee975a;}
       .day-on { background-color:#bccc76; } 
       .day-off { background-color:#F1EDE8;} 
+
+      input.error, input.error:focus { border: 2px solid red; }
+      .form-group { margin-bottom: 0.2rem; }
 
       .calendar {
         border: 1px solid;
@@ -106,25 +118,6 @@
         padding: 1rem 0;
       }
 
-      .chart-label {
-        height: 1.5rem;
-        text-align: center;
-      }
-      .chart-bar {
-        border: solid 1px;
-        background-color: #79A5F0;
-        text-align: center;
-        height: 4rem;  
-        display: flex;
-        align-items: flex-end;
-        justify-content: center;
-      }
-      .chart-dose {
-        text-align: center;
-      }
-      .chart-bar.this-dose {
-        background-color: #bccc76;
-      }
       .repair-factors {
         text-align: center;
       }
@@ -188,27 +181,33 @@
 
 <body>
   <div class="container-fluid">
-    <h1 class="text-center">LQ-model for Medical Physicists and Radiation Oncologists</h1>
-
+      <div class="text-right">
+          <div class="btn-group btn-group-sm" role="group">
+              <button type="button" class="btn btn-secondary" id="btnRu">ru</button>
+              <button type="button" class="btn btn-secondary" id="btnEn">en</button>
+          </div>
+      </div>
+    <h1 class="text-center" id="main_title">Калькулятор доз</h1>
     <div class="container">
+      <div class="alert alert-danger" role="alert" id="LQ_alert_lbl">Использование ЛК-модели обосновано для доз не превышающих 6-8 Гр</div>
       <div class="row my-4">
         <div class="col-12 col-md-6">
             <div class="form-group row">
-                <label class="col-form-label" for="fraction">Разовая очаговая доза <i>d</i> (РОД), Гр</label>
+                <label class="col-form-label" for="fraction" id="fraction_lbl">Разовая очаговая доза, Гр</label>
                 <div>
-                  <input type="number" class="form-control" id="fraction" value="2.66" placeholder="2" step="0.1">
+                  <input type="number" class="form-control" id="fraction" value="" min="0" max="100">
                 </div>
             </div>
          
           <div class="form-group row">
-              <label class="col-form-label" for="fractionCount">Кол-во рабочих дней (фракций)</label>
+              <label class="col-form-label" for="fractionCount" id="fraction_count_lbl">Кол-во рабочих дней (фракций)</label>
               <div>
-                <input type="number" class="form-control" id="fractionCount" value="16" placeholder="16" min="1" max="25">
+                <input type="number" class="form-control" id="fractionCount" value="" min="1" max="100">
               </div>
           </div>
           
           <div class="form-group row">
-            <label class="col-form-label" for="dayOfWeek">День недели начала лечения</label>
+            <label class="col-form-label" for="dayOfWeek" id="day_of_week_lbl">День недели начала лечения</label>
             <div>
               <select id="dayOfWeek" class="form-control">
                 <option value="0" selected>пн</option>
@@ -216,40 +215,39 @@
                 <option value="2">ср</option>
                 <option value="3">чт</option>
                 <option value="4">пт</option>
-                <!-- <option value="5">сб</option>
-                <option value="6">вс</option> -->
+                <option value="5">сб</option>
               </select>
             </div>
           </div>          
 
           <div class="form-group row">
-            <label class="col-form-label" for="fractionProceed">Прошло фракций</label>
+            <label class="col-form-label" for="fractionProceed" id="fraction_proceed_lbl">Прошло фракций</label>
             <div>
-              <input type="number" class="form-control" id="fractionProceed" value="1" placeholder="1" min="0" max="25">
+              <input type="number" class="form-control" id="fractionProceed" value="">
             </div>
         </div>
 
         <div class="form-group row">
-            <label class="col-form-label" for="alphabeta">Коэффициент α/β <span class="link" data-toggle="modal" data-target="#fract-sensitivity">(info)</span></label>
+            <label class="col-form-label" for="alphabeta" id="alphabeta_lbl">Коэффициент α/β <span class="link" data-toggle="modal" data-target="#fract-sensitivity">(инфо)</span></label>
             <div>
-              <input type="number" class="form-control" id="alphabeta" value="4" placeholder="4" step="0.1">
+              <input type="number" class="form-control" id="alphabeta" value="">
             </div>
         </div>
 
         <div class="form-group row">
-            <label class="col-form-label" for="recoveryHalftime">Recovery halftime, <i>T<sub>1/2</sub></i>, hours <span class="link" data-toggle="modal" data-target="#rec-halftime">(info)</span></label>
+            <label class="col-form-label" for="recoveryHalftime" id="recovery_halftime_lbl">Время полувосстановления <i>T<sub>1/2</sub></i>, часы <span class="link" data-toggle="modal" data-target="#rec-halftime">(инфо)</span></label>
             <div>
-              <input type="number" class="form-control" id="recoveryHalftime" value="3" placeholder="3" step="0.1">
+              <input type="number" class="form-control" id="recoveryHalftime" value="4.4" >
             </div>
         </div>
 
         <div class="form-group row">
-            <input type="checkbox" class="form-check-input" id="useProlif">
-            <label class="col-form-label" for="prolif">
-              Use <i>D<sub>prolif</sub></i> <span class="link" data-toggle="modal" data-target="#d-prolif">(info)</span>
+            <input type="checkbox" class="form-check-input" id="useProlif" disabled>
+            <label class="col-form-label" for="prolif" id="prolif_lbl">
+              Учитывать пролиферацию <i>D<sub>prolif</sub></i> <span class="link" data-toggle="modal" data-target="#d-prolif">(инфо)</span>
             </label>
             <div>
-              <input type="number" class="form-control" id="prolif" value="0.6" placeholder="0.6" min="0" max="5"  step="0.1" disabled>
+              <input type="number" class="form-control" id="prolif" value="" disabled>
             </div>
         </div>
 
@@ -258,43 +256,50 @@
         <div class="col-12 col-md-6">
 
           <div class="form-group row">
-              <label class="col-form-label" for="treatmentDays">Кол-во дней лечения, <i>T</i></label>
+              <label class="col-form-label" for="treatmentDays" id="treatment_days_lbl">Кол-во дней лечения, <i>T</i></label>
               <div>
-                <input type="number" class="form-control" id="treatmentDays" value="25" readonly>
+                <input class="form-control" id="treatmentDays" value="" readonly>
               </div>
           </div>
           <div class="form-group row">
-              <label class="col-form-label" for="offDays">Кол-во выходных</label>
+              <label class="col-form-label" for="offDays" id="off_days_lbl">Кол-во выходных</label>
               <div>
-                <input type="number" class="form-control" id="offDays" value="25" readonly>
+                <input class="form-control" id="offDays" value="" readonly>
               </div>
           </div>
           <div class="form-group row">
-              <label class="col-form-label" for="totalDose">Суммарная очаговая доза <i>D</i>, Гр</label>
+              <label class="col-form-label" for="totalDose" id="total_dose_lbl">Суммарная очаговая доза <i>D</i>, Гр</label>
               <div>
-                <input type="number" class="form-control" id="totalDose" value="50" readonly>
+                <input class="form-control" id="totalDose" value="" readonly>
               </div>
           </div>
 
           <div class="form-group row">
-            <label class="col-form-label" for="EQD2">Эквивалентная доза <i>EQD<sub>2</sub></i>, Гр</label>
+            <label class="col-form-label" for="receivedDose" id="received_dose_lbl">Полученная доза, Гр</label>
             <div>
-              <input type="number" class="form-control" id="EQD2" value="50" readonly>
+              <input class="form-control" id="receivedDose" value="" readonly>
             </div>
           </div>
 
           <div class="form-group row">
-            <label class="col-form-label" for="receivedDose">Полученная доза, Гр</label>
+            <label class="col-form-label" for="remainingDose" id="remaining_dose_lbl">Оставшаяся доза, Гр</label>
             <div>
-              <input type="number" class="form-control" id="receivedDose" value="50" readonly>
+              <input class="form-control" id="remainingDose" value="" readonly>
             </div>
           </div>
 
           <div class="form-group row">
-            <label class="col-form-label" for="remainingDose">Оставшаяся доза, Гр</label>
-            <div>
-              <input type="number" class="form-control" id="remainingDose" value="50" readonly>
-            </div>
+              <label class="col-form-label" for="EQD2" id="EQD2_lbl">Эквивалентная доза <i>EQD<sub>2</sub></i>, Гр</label>
+              <div>
+                  <input class="form-control" id="EQD2" value="" readonly>
+              </div>
+          </div>
+
+          <div class="form-group row">
+              <label class="col-form-label" for="BED" id="BED_lbl">Биологически эффективная доза (BED), Гр</label>
+              <div>
+                  <input class="form-control" id="BED" value="" readonly>
+              </div>
           </div>
 
         </div>
@@ -303,18 +308,18 @@
 
     </div>
 
-    <h4 class="text-center">Зависимость разовой дозы от количества оставшихся фракций</h5>
-    <div id="chart-content" class="container">
-    </div>
 
-    <h4 class="text-center">Расписание лечения</h4>
 
-    <div class="container calendar">
-      <div id="calendar-content" class="row">
+    <div id="calendar" style="display: none;">
+      <h4 class="text-center" id="schedule_lbl">Расписание лечения</h4>
+
+      <div class="container calendar">
+        <div id="calendar-content" class="row">
+        </div>
       </div>
-    </div>
-    <div class="container add-week">
-        <button id="add-week" type="button" class="btn btn-primary">Add extra week</button>
+      <div class="container add-week">
+          <button id="add_week_lbl" type="button" class="btn btn-primary">Добавить неделю</button>
+      </div>
     </div>
   </div>
   

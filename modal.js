@@ -41,7 +41,7 @@ const modalUtils = (function() {
         return `
 <table class="table table-bordered table-hover table-sm repair-factors">
    <thead>
-      <tr><th>Interval between fractions (hours)<th>Dose per fraction, Gy
+      <tr><th>${config.labels.time_interval_col1}<th>${config.labels.time_interval_col2}
    </thead>
    <tbody>${data.map(rowCell).join("")}<tbody>
 </table>
@@ -63,7 +63,7 @@ const modalUtils = (function() {
    <div class="modal-dialog" role="document">
       <div class="modal-content">
          <div class="modal-header">
-            <h5 class="modal-title">Select time interval between fractions</h5>
+            <h5 class="modal-title">${config.labels.time_interval_header}</h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>

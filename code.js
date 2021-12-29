@@ -8,14 +8,47 @@ var model = {
 function getInputData() {
     var data = {};
     config.formEditableValues.forEach(
-        x => data[x] = parseFloat(document.getElementById(x).value, 10)
+        x => data[x] = parseFloat(document.getElementById(x).value)
     );
     data.useProlif = document.getElementById("useProlif").checked;
-    // validate fractionProceed
-    if (data.fractionProceed < 0) data.fractionProceed = 0;
-    if (data.fractionProceed >= data.fractionCount) data.fractionProceed = data.fractionCount-1;
+    var prolifElem = document.getElementById("prolif");
+    prolifElem.disabled = !data.useProlif;
+    if (!data.useProlif) prolifElem.value = "";
 
-    return data; 
+    var validatedCount =
+       validateData("fraction", (data.fraction > 0) && (data.fraction < 100)) +
+       validateData("fractionCount", (data.fractionCount > 0) && (data.fractionCount < 100)) +
+       validateData("fractionProceed", (data.fractionProceed >= 0) && (data.fractionProceed < data.fractionCount)) +
+       validateData("alphabeta", (data.alphabeta >= 0) && (data.alphabeta < 100)) +
+       validateData("recoveryHalftime", (data.recoveryHalftime > 0) && (data.recoveryHalftime < 100));
+
+    validateData("prolif", (!data.useProlif) || ((data.prolif > 0) && (data.prolif < 100)));
+    setEnabledProlif(data);
+
+    setElementVisible("LQ_alert_lbl", data.fraction > 8);
+
+    if (validatedCount != 5) return false;
+    return data;
+}
+
+function validateData(id, result) {
+    let elem = document.getElementById(id);
+    if (result) elem.classList.remove("error")
+    else elem.classList.add("error");
+    return result ? 1:0;
+}
+
+function setEnabledProlif(data) {
+    calcFormValues(data);
+    let isEnabled = data.treatmentDays > 21;
+    var useProlif = document.getElementById("useProlif");
+    useProlif.disabled = !isEnabled;
+    if (!isEnabled) useProlif.checked = false;
+    if (!isEnabled) {
+        var prolifElem = document.getElementById("prolif");
+        prolifElem.disabled = true;
+        prolifElem.value = "";
+    }
 }
 
 function calcFormValues(data) {
@@ -25,16 +58,25 @@ function calcFormValues(data) {
     const rem = weekAligned % workingDaysInWeek;
     data.treatmentWeeks = (weekAligned - rem) / workingDaysInWeek + (rem > 0 ? 1:0);
     data.offDays = (data.treatmentWeeks - 1) * offDaysInWeek;
+    if (data.dayOfWeek == 5) data.offDays--;
+
     data.treatmentDays = data.fractionCount + data.offDays;
     data.totalDose = data.fractionCount * data.fraction;
     data.EQD2 = getEquivalentQuantityDose(data.fractionCount, data.fraction, data.alphabeta);
     data.receivedDose = getEquivalentQuantityDose(data.fractionProceed, data.fraction, data.alphabeta);
     data.remainingDose = getEquivalentQuantityDose(data.fractionCount - data.fractionProceed, data.fraction, data.alphabeta);
+    data.BED = data.totalDose * (1+ data.fraction/data.alphabeta);
 }
 
 function fillReadonlyFormData(data) {
     config.formReadonlyValues.forEach(
-        x => document.getElementById(x).value = data[x]
+        x => document.getElementById(x).value = Math.round(data[x] * 1000) / 1000
+    );
+}
+
+function cleanAllCalculatedData() {
+    config.formReadonlyValues.forEach(
+        x => document.getElementById(x).value = ""
     );
 }
 
@@ -42,10 +84,13 @@ function attachFormEvents() {
     config.formEditableValues.forEach(
         x => document.getElementById(x).addEventListener("change", inputDataChanged)
     );
+    document.getElementById("btnRu").addEventListener("click", setLanguageRu, false);
+    document.getElementById("btnEn").addEventListener("click", setLanguageEn, false);
     var content = document.getElementById("calendar-content");
     content.addEventListener("click", calendarClick, false);
-    var addWeek = document.getElementById("add-week");
+    var addWeek = document.getElementById("add_week_lbl");
     addWeek.addEventListener("click", addWeekClick, false);
+
 }
 
 function addWeekClick(event) {
@@ -232,7 +277,7 @@ function calcNewDose(newFractionCount) {
     //const receivedDose = input.receivedDose;
 
     let remainingDose = input.remainingDose;
-    if (input.useProlif) {
+    if (input.useProlif && (input.prolif>0)) {
         const deltaT = (output.treatmentDays || input.treatmentDays) - input.treatmentDays;
         remainingDose += deltaT * input.prolif;
     }
@@ -269,14 +314,16 @@ function solveQuadraticEquation(a,b,c) {
 
 function inputDataChanged(event) {
     var inputValues = getInputData();
-    calcFormValues(inputValues);
-    fillReadonlyFormData(inputValues);
-    if (event && event.target.id=="useProlif") {
-       document.getElementById("prolif").disabled = !inputValues.useProlif; 
+    if (!inputValues) {
+        cleanAllCalculatedData();
+        setCalendarVisible(false);
+        return;
     }
 
+    calcFormValues(inputValues);
+    fillReadonlyFormData(inputValues);
+
     model.input.values = inputValues;
-    fillDoseChart();
     if (model.output.calendar) {
         rebuildCalendar();
         calcAndFillCalendar(model.output.calendar);
@@ -285,31 +332,17 @@ function inputDataChanged(event) {
         model.output.calendar = null;
         fillCalendar(model.input.calendar);
     }
+    setCalendarVisible(true);
 }
 
-function fillDoseChart() {
-    const printBar = (x) => `
-        <div class="col d-flex flex-column-reverse">
-            <div class="chart-label">${x.days} дней</div>
-            <div class="chart-bar ${x.class}" style="height:${x.fraction}rem"></div>
-            <div class="chart-dose">${x.fraction} Гр</div>
-        </div>`;
-
-    const remainingDays = model.input.values.fractionCount - model.input.values.fractionProceed;
-    const start = Math.max(1, remainingDays - 4);
-    const bars1 = Array.from({length : 9}, (x, idx) => start + idx)
-                      .map(x => ({ 
-                          days: x, 
-                          fraction: Math.round(calcNewDose(x+model.input.values.fractionProceed).fraction*100)/100,
-                          class: (x == remainingDays) ? "this-dose" : "" 
-                       }));
-    const bars = bars1                   
-                      .filter(x=>x.fraction > 0)
-                      .map(printBar)
-                      .join("");
-
-    document.getElementById("chart-content").innerHTML = `<div class="row">${bars}</div>`;
+function setCalendarVisible(value) {
+    setElementVisible("calendar", value);
 }
+
+function setElementVisible(elem_id, value) {
+    document.getElementById(elem_id).style.display = value? "block" : "none";
+}
+
 
 function fillNewDose() {
     const input = model.input.values;
@@ -333,7 +366,7 @@ function fillNewDose() {
 function fillCalendar(calendar) {
     const crlf = '<div class="w-100"></div>';
     
-    const getTableHeader = () => config.weekDayNames
+    const getTableHeader = () => config.labels.weekDayNames
                               .map(x => `<div class="col theader">${x}</div>`)
                               .join("");
 
@@ -343,7 +376,7 @@ function fillCalendar(calendar) {
     `<div id="c${id}" class="col d-flex flex-row day-on ${cl}">
         <div class="flex-grow-1 flex-column">
            <div class="flex-grow-1 mday">${frac}</div>
-           <div class="details">${dose}&nbsp;Gy  ${deltaT}</div>
+           <div class="details">${dose}&nbsp;${config.labels.gray}  ${deltaT}</div>
         </div>
         <div class="cday d-flex flex-column justify-content-between">
            <div>${tday}</div>
@@ -372,7 +405,7 @@ function fillCalendar(calendar) {
 
     const getDeltaT = (x) => {
         if (x.fractionCnt <= 1) return "";
-        return `<div class="Hm" data="${x.deltaT}"><i>Δt</i>=${x.deltaT}h</div>`;
+        return `<div class="Hm" data="${x.deltaT}"><i>Δt</i>=${x.deltaT}${config.labels.hour}</div>`;
     }
 
     function getCell(x, idx) {
@@ -406,6 +439,7 @@ function calcCalendar(inputData) {
     for(let i=0; i < inputData.treatmentWeeks; i++) {
         let start = (i==0) ? inputData.dayOfWeek : 0;
         let end = (i==inputData.treatmentWeeks-1) ? (inputData.dayOfWeek + inputData.treatmentDays) % 7 : 5;
+        if (end <= start) end = start+1;
         let j=0;
         for(; j<start; j++) {
             calendar.weeks.push({ 
@@ -448,6 +482,26 @@ function calcCalendar(inputData) {
     return calendar;
 }
 
+function setLanguageRu() { setLanguage(config.labels_ru); }
+function setLanguageEn() { setLanguage(config.labels_en); }
 
+function setLanguage(labels) {
+    if (config.labels == labels) return;
+    config.labels = labels;
+    for (let prop in labels) {
+        var elem = document.getElementById(prop);
+        if (!elem) continue;
+        elem.innerHTML = labels[prop];
+    }
+    document.title = labels.main_title;
+
+    var selector = document.getElementById("dayOfWeek");
+    selector.options.length=0
+    for(var i=0; i<labels.weekDayNames.length-1; i++) {
+        selector.options[i] = new Option(labels.weekDayNames[i], i, i==0, false);
+    }
+}
+
+setLanguageRu();
 attachFormEvents();
 inputDataChanged();
