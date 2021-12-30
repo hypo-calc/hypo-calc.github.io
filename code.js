@@ -59,18 +59,27 @@ function calcFormValues(data) {
     data.treatmentWeeks = (weekAligned - rem) / workingDaysInWeek + (rem > 0 ? 1:0);
     data.offDays = (data.treatmentWeeks - 1) * offDaysInWeek;
     if (data.dayOfWeek == 5) data.offDays--;
-
     data.treatmentDays = data.fractionCount + data.offDays;
+
+}
+
+function calcDataValues(data) {
     data.totalDose = data.fractionCount * data.fraction;
     data.EQD2 = getEquivalentQuantityDose(data.fractionCount, data.fraction, data.alphabeta);
     data.receivedDose = getEquivalentQuantityDose(data.fractionProceed, data.fraction, data.alphabeta);
     data.remainingDose = getEquivalentQuantityDose(data.fractionCount - data.fractionProceed, data.fraction, data.alphabeta);
     data.BED = data.totalDose * (1+ data.fraction/data.alphabeta);
+
+    if ((data.useProlif) && (data.prolif > 0)) {
+        data.EQD2prolif = data.EQD2 - (data.offDays * data.prolif);
+    } else {
+        data.EQD2prolif = "";
+    }
 }
 
 function fillReadonlyFormData(data) {
     config.formReadonlyValues.forEach(
-        x => document.getElementById(x).value = Math.round(data[x] * 1000) / 1000
+        x => document.getElementById(x).value = data[x]!="" ? (Math.round(data[x] * 1000) / 1000) : ""
     );
 }
 
@@ -203,6 +212,7 @@ function calendarChanged(id) {
 }
 
 function calcAndFillCalendar(cal) {
+
     Object.assign(
         model.output.values, 
         calcNewDose(model.output.values.fractionCount)
@@ -235,6 +245,7 @@ function rebuildCalendar() {
     var weeks = model.output.calendar.weeks;
     var currFraction = 1;
     var currDay = 1;
+    var offDays = 0;
     for(let i=0; i < weeks.length; i++) {
         let val = weeks[i];
         switch (val.type) {
@@ -243,12 +254,14 @@ function rebuildCalendar() {
                 currFraction += val.fractionCnt;
             case config.offDay:
                 val.day = currDay++;
+                offDays++;
                 break;
             case config.emptyDay: break;
         }
     }
     model.output.values.fractionCount = currFraction-1;
     model.output.values.treatmentDays = currDay-1;
+    model.output.values.offDays = offDays;
 }
 
 function getRepairFactor(m, ht, Δt) {
@@ -287,7 +300,7 @@ function calcNewDose(newFractionCount) {
         input.alphabeta,
         -remainingDose*(2+input.alphabeta)/(newFractionCount-input.fractionProceed)
     );
-    return { 
+    return {
         EQD2, EQD2new, /*deltaT, EQD2T, doseLostPercent, doseError, 
         receivedDose, remainingDose, doseDiff,*/ totalDose, fraction
     };
@@ -316,11 +329,12 @@ function inputDataChanged(event) {
     var inputValues = getInputData();
     if (!inputValues) {
         cleanAllCalculatedData();
-        setCalendarVisible(false);
         return;
     }
 
     calcFormValues(inputValues);
+    calcDataValues(inputValues);
+
     fillReadonlyFormData(inputValues);
 
     model.input.values = inputValues;
@@ -332,11 +346,6 @@ function inputDataChanged(event) {
         model.output.calendar = null;
         fillCalendar(model.input.calendar);
     }
-    setCalendarVisible(true);
-}
-
-function setCalendarVisible(value) {
-    setElementVisible("calendar", value);
 }
 
 function setElementVisible(elem_id, value) {
@@ -348,7 +357,8 @@ function fillNewDose() {
     const input = model.input.values;
     const output = model.output.values;
     const weeks = model.output.calendar.weeks;
-    var dose = input.fraction;
+    var dose = (input.fractionProceed==0) ? output.fraction : input.fraction;
+    dose = Math.round(dose*100)/100;
     for(let i=0; i<weeks.length; i++) {
         if (weeks[i].type == config.onDay) {
             if (weeks[i].fractionCnt==1) {
@@ -500,8 +510,19 @@ function setLanguage(labels) {
     for(var i=0; i<labels.weekDayNames.length-1; i++) {
         selector.options[i] = new Option(labels.weekDayNames[i], i, i==0, false);
     }
+
+    var hint = document.getElementById("prolif_lbl");
+    hint.title = labels.prolif_lbl_hint;
+}
+
+function createEmptyCalendar(weeksCnt) {
+    var weeks = new Array();
+    for(let i=0; i<7*weeksCnt; i++) weeks.push({ id: i, type : config.emptyDay, class: "" });
+    fillCalendar({ weeks });
 }
 
 setLanguageRu();
 attachFormEvents();
 inputDataChanged();
+createEmptyCalendar(6);
+
