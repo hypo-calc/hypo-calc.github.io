@@ -523,6 +523,8 @@ function setLanguage(labels) {
 
     var hint = document.getElementById("prolif_lbl");
     hint.title = labels.prolif_lbl_hint;
+    hint = document.getElementById("prolif");
+    hint.title = labels.prolif_lbl_hint;
 }
 
 function createEmptyCalendar(weeksCnt) {
