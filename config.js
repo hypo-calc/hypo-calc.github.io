@@ -2,7 +2,7 @@
 
 var config = {
     formEditableValues : ["fraction", "fractionCount", "recoveryHalftime", "alphabeta", "dayOfWeek","fractionProceed","useProlif","prolif"], 
-    formReadonlyValues : ["offDays","treatmentDays","totalDose","EQD2", "BED", "EQD2prolif"],
+    formReadonlyValues : ["offDays","treatmentDays","totalDose","EQD2", "BED", "EQD2prolif", "factTreatmentDays", "factOffDays"],
     weekDayNames : ["пн","вт","ср","чт","пт","сб","вс"],
     maxFractions : 50,
     maxFractionsPerDay: 3,
@@ -36,6 +36,8 @@ var config = {
         time_interval_col1: "Interval between fractions (hours)",
         time_interval_col2: "Dose per fraction, Gy",
         LQ_alert_lbl: "LQ model is justified for doses not exceeding 6-8 Gy!",
+        factTreatmentDays_lbl: "Factual treatment days",
+        factOffDays_lbl:"Factual gap days",
 
         weekDayNames: ["Mo","Tu","We","Th","Fr","Sa","Su"],
         gray: "Gy",
@@ -65,6 +67,8 @@ var config = {
         time_interval_col1: "Интервал между фракциями, ч",
         time_interval_col2: "Разовая доза, Гр",
         LQ_alert_lbl: "Использование ЛК-модели обосновано для доз не превышающих 6-8 Гр !",
+        factTreatmentDays_lbl: "Фактическое кол-во дней лечения",
+        factOffDays_lbl:"Фактическое кол-во пропущенных дней",
 
         weekDayNames: ["пн","вт","ср","чт","пт","сб","вс"],
         gray: "Гр",

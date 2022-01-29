@@ -60,7 +60,8 @@ function calcFormValues(data) {
     data.offDays = (data.treatmentWeeks - 1) * offDaysInWeek;
     if (data.dayOfWeek == 5) data.offDays--;
     data.treatmentDays = data.fractionCount + data.offDays;
-
+    data.factTreatmentDays = data.treatmentDays;
+    data.factOffDays = 0;
 }
 
 function calcDataValues(data) {
@@ -71,7 +72,7 @@ function calcDataValues(data) {
     data.BED = data.totalDose * (1+ data.fraction/data.alphabeta);
 
     if ((data.useProlif) && (data.prolif > 0)) {
-        data.EQD2prolif = data.EQD2 - (data.offDays * data.prolif);
+        data.EQD2prolif = data.EQD2 - ((data.factTreatmentDays - data.treatmentDays) * data.prolif);
     } else {
         data.EQD2prolif = "";
     }
@@ -219,6 +220,13 @@ function calcAndFillCalendar(cal) {
     );
     fillNewDose();
     fillCalendar(cal);
+
+    let inputData = getInputData();
+    calcFormValues(inputData);
+    inputData.factTreatmentDays = model.output.values.treatmentDays;
+    inputData.factOffDays = model.output.values.offDays - model.input.values.offDays;
+    calcDataValues(inputData);
+    fillReadonlyFormData(inputData)
 }
 
 function adjustEmptyCells() {
@@ -252,6 +260,8 @@ function rebuildCalendar() {
             case config.onDay:
                 val.fraction = currFraction;
                 currFraction += val.fractionCnt;
+                val.day = currDay++;
+                break;
             case config.offDay:
                 val.day = currDay++;
                 offDays++;
