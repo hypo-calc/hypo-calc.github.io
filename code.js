@@ -19,6 +19,7 @@ function getInputData() {
        validateData("recoveryHalftime", (data.recoveryHalftime > 0) && (data.recoveryHalftime < 100));
 
 
+    calcFormValues(data);
     setEnabledProlif(data);
 
     setElementVisible("LQ_alert_lbl", data.fraction > 8);
@@ -35,8 +36,7 @@ function validateData(id, result) {
 }
 
 function setEnabledProlif(data) {
-    calcFormValues(data);
-    let isEnabled = data.treatmentDays > 21;
+    let isEnabled = data.factTreatmentDays > 21;
     var prolifElem = document.getElementById("prolif");
     prolifElem.disabled = !isEnabled;
     data.prolif |= 0;
@@ -96,16 +96,16 @@ function attachFormEvents() {
 
 }
 
-function addWeekClick(event) {
-    const fillCalendarWithEmptyWeek = (c) => {
-        let idCounter = c.length;
-        for(let i=1; i<=7; i++) c.push({  
-            id: idCounter++, 
-            type : config.emptyDay,
-            class: "" 
-        });
-    }
+function fillCalendarWithEmptyWeek(c) {
+    let idCounter = c.length;
+    for(let i=1; i<=7; i++) c.push({
+        id: idCounter++,
+        type : config.emptyDay,
+        class: ""
+    });
+}
 
+function addWeekClick(event) {
     let cal = model.input.calendar;
     fillCalendarWithEmptyWeek(cal.weeks);
     if (model.output.calendar) {
@@ -218,8 +218,11 @@ function calcAndFillCalendar(cal) {
     calcFormValues(inputData);
     inputData.factTreatmentDays = model.output.values.treatmentDays;
     inputData.factOffDays = model.output.values.offDays - model.input.values.offDays;
+    setEnabledProlif(inputData);
+
     calcDataValues(inputData);
     fillReadonlyFormData(inputData)
+
 }
 
 function adjustEmptyCells() {
@@ -492,6 +495,18 @@ function calcCalendar(inputData) {
             }
         }
     }
+
+
+    if (inputData.treatmentWeeks<6) {
+        for(var i=inputData.treatmentWeeks; i<6; i++) {
+            fillCalendarWithEmptyWeek(calendar.weeks)
+        }
+    } else {
+        for(var i=0; i<2; i++) {
+            fillCalendarWithEmptyWeek(calendar.weeks)
+        }
+    }
+
     return calendar;
 }
 
