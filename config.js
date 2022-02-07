@@ -1,7 +1,7 @@
 "use strict";
 
 var config = {
-    formEditableValues : ["fraction", "fractionCount", "recoveryHalftime", "alphabeta", "dayOfWeek","fractionProceed","useProlif","prolif"], 
+    formEditableValues : ["fraction", "fractionCount", "recoveryHalftime", "alphabeta", "dayOfWeek","fractionProceed","prolif"],
     formReadonlyValues : ["offDays","treatmentDays","totalDose","EQD2", "BED", "EQD2prolif", "factTreatmentDays", "factOffDays"],
     weekDayNames : ["пн","вт","ср","чт","пт","сб","вс"],
     maxFractions : 50,

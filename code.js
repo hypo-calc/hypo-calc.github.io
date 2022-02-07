@@ -10,10 +10,6 @@ function getInputData() {
     config.formEditableValues.forEach(
         x => data[x] = parseFloat(document.getElementById(x).value)
     );
-    data.useProlif = document.getElementById("useProlif").checked;
-    var prolifElem = document.getElementById("prolif");
-    prolifElem.disabled = !data.useProlif;
-    if (!data.useProlif) prolifElem.value = "";
 
     var validatedCount =
        validateData("fraction", (data.fraction > 0) && (data.fraction < 100)) +
@@ -22,7 +18,7 @@ function getInputData() {
        validateData("alphabeta", (data.alphabeta >= 0) && (data.alphabeta < 100)) +
        validateData("recoveryHalftime", (data.recoveryHalftime > 0) && (data.recoveryHalftime < 100));
 
-    validateData("prolif", (!data.useProlif) || ((data.prolif > 0) && (data.prolif < 100)));
+
     setEnabledProlif(data);
 
     setElementVisible("LQ_alert_lbl", data.fraction > 8);
@@ -41,14 +37,11 @@ function validateData(id, result) {
 function setEnabledProlif(data) {
     calcFormValues(data);
     let isEnabled = data.treatmentDays > 21;
-    var useProlif = document.getElementById("useProlif");
-    useProlif.disabled = !isEnabled;
-    if (!isEnabled) useProlif.checked = false;
-    if (!isEnabled) {
-        var prolifElem = document.getElementById("prolif");
-        prolifElem.disabled = true;
-        prolifElem.value = "";
-    }
+    var prolifElem = document.getElementById("prolif");
+    prolifElem.disabled = !isEnabled;
+    data.prolif |= 0;
+    data.useProlif = isEnabled && (data.prolif>0) && (data.prolif<100)
+    if (isEnabled) validateData("prolif", (data.prolif >= 0) && (data.prolif < 100));
 }
 
 function calcFormValues(data) {
