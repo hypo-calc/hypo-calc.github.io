@@ -39,7 +39,7 @@ function setEnabledProlif(data) {
     let isEnabled = data.factTreatmentDays > 21;
     var prolifElem = document.getElementById("prolif");
     prolifElem.disabled = !isEnabled;
-    data.prolif |= 0;
+    data.prolif ||= 0;
     data.useProlif = isEnabled && (data.prolif>0) && (data.prolif<100)
     if (isEnabled) validateData("prolif", (data.prolif >= 0) && (data.prolif < 100));
 }
