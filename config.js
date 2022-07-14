@@ -4,7 +4,7 @@ var config = {
     formEditableValues : ["fraction", "fractionCount", "recoveryHalftime", "alphabeta", "dayOfWeek","fractionProceed","prolif"],
     formReadonlyValues : ["offDays","treatmentDays","totalDose","EQD2", "BED", "EQD2prolif", "factTreatmentDays", "factOffDays"],
     weekDayNames : ["пн","вт","ср","чт","пт","сб","вс"],
-    maxFractions : 50,
+    maxFractions : 70,
     maxFractionsPerDay: 3,
     emptyDay : "0",
     offDay: "1",
